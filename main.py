@@ -12,12 +12,11 @@ widgets and initializes all the stuff (tree, frame_property, etc.)
 import logging, os, os.path, sys, math, time, functools
 import wx
 from xml.sax import SAXParseException
-
 # import project modules
 import application
 import common, config, compat, misc, history
 import new_properties as np
-import preferencesdialog, msgdialog, bugdialog, about
+import preferencesdialog, msgdialog, bugdialog, about, resourcesdialog
 import log
 import template
 from tree import WidgetTree
@@ -730,6 +729,11 @@ class wxGladeFrame(wx.Frame):
         tb.AddSeparator()
         t = add(-1, "Generate Code", wx.ART_EXECUTABLE_FILE, wx.ITEM_NORMAL, "Generate Code (Ctrl+G)" )
         self.Bind(wx.EVT_TOOL, lambda event: common.root.generate_code(), t)
+
+        # TODO: Jalkhov: Disable if a project is not open
+        rsc = add(-1, "Resources", wx.ART_NORMAL_FILE, wx.ITEM_NORMAL, "Resources (Ctrl+?)" )
+        self.Bind(wx.EVT_TOOL, self.edit_resources, rsc)
+
         tb.AddSeparator()
         
         t1 = add(-1, "Layout 1", "layout1.png", wx.ITEM_RADIO, "Switch layout: Tree", 
@@ -803,6 +807,22 @@ class wxGladeFrame(wx.Frame):
             dialog.set_preferences()
         else:
             dialog.canceled()
+        dialog.Destroy()
+
+    def edit_resources(self, _event=None):
+        filename = common.root.filename
+        if not filename:
+            # TODO: Jalkhov: Improve message
+            misc.error_message("First you must open a project")
+            return
+
+        dialog = resourcesdialog.wxGladeResources(self)
+        dialog.cur_project = filename
+
+        if dialog.ShowModal() == wx.ID_OK:
+            pass
+        else:
+            pass
         dialog.Destroy()
 
     def _get_toplevel(self):
